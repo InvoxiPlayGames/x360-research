@@ -9,4 +9,8 @@
 
 * Hypervisor
     * Key Derivation - Notes on how the hypervisor derives decryption keys for
-    various parts of the system.
+      various parts of the system.
+
+* Kernel
+    * Memory Map - information about the way memory is mapped out in the official
+      Xbox 360 kernel.

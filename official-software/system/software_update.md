@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - System Software**
 
-Updated 14th January 2024.
+Updated 26th January 2024.
 
 # Software Updates
 
@@ -28,10 +28,13 @@ installed to.
 
 This was originally used as a fallback for if updates failed, however 4532 
 was the first to totally replace an XEX file on NAND rather than using a patch.
+What this resulted in was the system becoming useless as a fallback, now
+solely acting as a way of reducing download size for the smaller files that
+didn't get updated often.
 
 The file `systemupdate2pre.xex` is copied to NAND during the update process,
 launched by the resulting kernel, and subsequently deleted after it isn't
-needed anymore.
+needed anymore. It is responsible for updating the DVD drive firmware.
 
 The kernel, on initialisation, makes a XEXP loading rule for files loaded from
 flash, which decides whether to use the `.xexp1` or `.xexp2` based on the
@@ -53,7 +56,8 @@ patch slot to tell $install_extender to write the resulting CF to.
 The `HvxKeysSaveSystemUpdate` hypervisor syscall takes the input CF, and
 writes the required pairing data to an offset in the CF (taken from the current
 CPU fuse count value, and adding 1 to it), before signing it with the console's
-CPU key and re-encrypting it with a new randomly generated key.
+CPU key with a HMAC-SHA1 over the pairing data, and re-encrypting it with a new
+randomly generated key.
 
 An implementation of the CE->CG delta patching code is available in
 [xenon-bltool](https://github.com/InvoxiPlayGames/xenon-bltool).
