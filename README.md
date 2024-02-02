@@ -41,6 +41,7 @@ information:
   [XDKbuild](https://github.com/xvistaman2005/XDKbuild) project.
 * [XenonLibrary wiki](https://xenonlibrary.com/wiki/Main_Page)
 * [XenonWiki wiki](https://www.xenonwiki.com/Main_Page)
+* [DrSchottky's X360 Reversing tutorials](https://www.razielconsole.com/forum/guide-e-tutorial-xbox-360/943-%5Bx360-reversing%5D-intro.html)
 
 I likely wouldn't know nearly as much as I do if not for all the great open source
 projects detailing how parts of this system work, and all the people behind them. 

@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Kernel**
 
-Updated 26th January 2024.
+Updated 27th January 2024.
 
 # Memory Map
 
@@ -30,7 +30,8 @@ memory from this space by default.
 
 During kernel initialisation, certain hardware peripherals are mapped to this
 address space for MMIO access. This allows the kernel to access hardware such as
-the SATA controller, SFC or MMC controllers (for internal flash), 
+the SATA controller, SFC or MMC controllers (for internal flash), the Xenos GPU,
+System Management Controller (SMC) and the XMA audio hardware.
 
 | Address      | Length   | Contents                            | Physical     |
 | ------------ | -------- | ----------------------------------- | ------------ |
@@ -88,7 +89,7 @@ enabled or not, with them defaulting to being disabled.
 The length of all these should be considered `0x1FFFFFFF` (512MB), however they
 are not always enabled except for the 64KB paged mirror.
 
-(TODO: Does MmAllocatePhysicalMemory)
+(TODO: Does MmAllocatePhysicalMemory enable areas of this space?)
 
 * `0xA0000000` - physical memory, 64KB paged.
     * The kernel enables 9 pages starting at `0xA1F70000` during initialisation,
