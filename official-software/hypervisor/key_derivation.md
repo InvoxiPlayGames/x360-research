@@ -20,6 +20,9 @@ The MMIO offset this value is read from is `0x80000200_000250B8`. This can be re
 within XeLL and libxenon applications from the 32-bit address `0x200250B8`. The expected
 value on a regular Xbox 360 has a CRC32 of `0x4B17A409`. (Begins `81300D...`)
 
+*(Note: If reading from HV or libxenon context, you must make sure this value is fetched
+with an "ld" instruction, otherwise the system could lock up.)*
+
 *(TODO: It'd be nice to find out what this value means, and what affects it.)*
 
 The derivation process consists of calls to XeCryptHmacSha, with the aforementioned key 
