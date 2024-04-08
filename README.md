@@ -42,6 +42,8 @@ information:
 * [XenonLibrary wiki](https://xenonlibrary.com/wiki/Main_Page)
 * [XenonWiki wiki](https://www.xenonwiki.com/Main_Page)
 * [DrSchottky's X360 Reversing tutorials](https://www.razielconsole.com/forum/guide-e-tutorial-xbox-360/943-%5Bx360-reversing%5D-intro.html)
+* [TEIR1plus2's Xbox-Reversing](https://github.com/TEIR1plus2/Xbox-Reversing)
+* [ihatecompvir's x360-hv-notes](https://github.com/ihatecompvir/x360-hv-notes)
 
 I likely wouldn't know nearly as much as I do if not for all the great open source
 projects detailing how parts of this system work, and all the people behind them. 

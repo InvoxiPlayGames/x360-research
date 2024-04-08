@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Hypervisor**
 
-Updated 14th January 2024.
+Updated 22nd February 2024.
 
 # Key Derivation
 
