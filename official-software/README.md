@@ -2,6 +2,14 @@
 
 # Table of Contents
 
+* Bootloaders
+    * CB_A
+    * CD
+
+* File Formats
+    * BDES Header - The "BDES" header found at the start of system update XZP
+      files.
+
 * System Software
     * Security Overview - A rough high-level overview of the security features
       and system of the Xbox 360.

@@ -22,6 +22,12 @@ as entirely your own. And if you're reading this and know anything useful, pleas
 write it down and publish it somewhere, ideally a public wiki or Git repo.
 You never know who might need it in the future, when you forget or aren't around.
 
+An additional request is that if you found anything I've written here useful,
+please make whatever you make with it open source (or have plans to) - too many
+times in this scene has a useful piece of software been made, but decayed over
+the years and unable to be fixed as the source code is long gone. Of course,
+this choice is still up to you. Please, take the right one.
+
 If you want to contribute to any of these pages, feel free to send a pull request,
 and put your name on it.
 
