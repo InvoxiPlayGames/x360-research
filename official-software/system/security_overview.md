@@ -12,7 +12,7 @@ with the attempted prevention of piracy and online cheating being a side-effect.
 As of 2024, every console manufactured before 2011 is subject to trivial
 piracy, and cheating online in many games is possible with savegame exploits,
 patched game files on burned DVDs, or network exploits.
-The last method to run homebrew without soldering was patched in 2007.
+The last method to run homebrew without soldering a modchip was patched in 2007.
 
 ## Security Features
 
@@ -32,7 +32,8 @@ The last method to run homebrew without soldering was patched in 2007.
       the hypervisor never allocates executable virtual memory to the kernel
       that has the execute permission *and* write permission.
     * New memory when loading new executables can't be marked as executable
-      unless all signature checks have been passed.
+      unless all signature checks have been passed by both the kernel and
+      hypervisor.
     * Games for the most part run in the same privilege ring as kernel, for
       performance. Certain software uses a "user-mode" but that doesn't act
       as much of a security barrier, rather a memory management mode.
@@ -43,12 +44,15 @@ The last method to run homebrew without soldering was patched in 2007.
       preventing hardware DMA attacks or kernel-land software exploits from
       tampering with it or its state, even in uncontrollable ways.
     * The encryption is AES-128 with a slightly customised algorithm. Encryption
-      is done per cache line.
-    * The encryption and hashing is done transparently to the kernel by the L2
-      cache.
-    * Random AES key chosen at startup by 2BL, with help from hardware RNG. The
-      2BL also checks to make sure there's sufficient randomness so the RNG
-      can't be rigged or disabled.
+      is done per every 0x10 bytes (AES block size) with a random key.
+    * The hashing is a custom variation of CRC16 by IBM. Hashing is done per
+      every 0x80 bytes (cache line size) and is done using a random key generated
+      at startup.
+    * The encryption and hashing is done transparently to the kernel by the MMU
+      and L2 cache.
+    * Random AES keys are chosen at startup by 2BL, with help from hardware RNG.
+      The 2BL also checks to make sure there's sufficient randomness so the RNG
+      can't be rigged or disabled in hardware.
 
 ## Security Pitfalls
 
@@ -66,7 +70,20 @@ The last method to run homebrew without soldering was patched in 2007.
     * XGD3 seemed to have partially fixed this problem.
 * While various system applications are compiled with stack canaries enabled,
   plenty of games are not, as was standard for the time for performance reasons.
+    * Games can be patched when the system is connected to Live, but being
+      offline and clearing cache makes the system vulnerable again.
 * Due the kernel running under a 32-bit address space, despite being a 64-bit
   platform, none of the more advanced security features such as ASLR and PAC
   could be used effectively, and in fact weren't used at all. This, combined
   with the lack of stack canaries, makes exploiting userland trivial.
+* System management controller / SMC / Southbridge firmware is not signed,
+  meaning it can be replaced to modify the behaviour or be used to attack the
+  CPU (see: SMC Hack, RGH3 - as well as all other RGH variants rebooting rather
+  than RRoD on failed boots)
+
+## References
+
+* Memory encryption/hashing:
+  https://github.com/GoobyCorp/Xbox-360-Crypto/blob/master/MemCrypto.py
+
+I must've got some more of this info from other places, but I can't remember.
