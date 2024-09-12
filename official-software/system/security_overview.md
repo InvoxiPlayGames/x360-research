@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - System Software**
 
-Updated 14th January 2024.
+Updated 12th September 2024.
 
 "Stub" page, not in-depth, just trying to put some notes and thoughts here:
 
