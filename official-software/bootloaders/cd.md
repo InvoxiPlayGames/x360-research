@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Bootloaders**
 
-Updated 2nd February 2024.
+Updated 23rd October 2024.
 
 Stub page, for the most part. Needs some work.
 
@@ -17,11 +17,10 @@ Everything before launch needs to be documented
 ## Launching the Hypervisor
 
 Since CD bootloader runs in a 32-bit translated address space, it can't just
-jump to the hypervisor's entrypoint/reset vector. When loading into 
+jump to the hypervisor's entrypoint/reset vector. When loading into the
+hypervisor, it does the following:
 
-It does the following:
-
-* Clears out any bootloader stages from instruction and data cache
+* Flushes any bootloader stages from cache and into RAM(?)
 * Clears some special purpose registers
 * Invalidates the translation lookaside buffer
 * Disables instruction and data address translation in the MSR
@@ -34,7 +33,8 @@ It does the following:
 ```
 launch_hypervisor:
 
-; flush CE/CF/CG from data and instruction cache (i think? check)
+; store CE/CF/CG into data cache and invalidate instruction cache
+; (i think? check)
 cache_flush:
     lis r3, 0x28        ; r3 = 0x280000
     li r4, 0x2a00
