@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Networking**
 
-Updated 24th October 2024.
+Updated 7th March 2025.
 
 Stub page.
 
@@ -125,15 +125,17 @@ All values are in little endian. Why?
 with a source IP of 0.0.0.1 and a destination IP address of 255.255.255.255.
 The destination MAC address is FF:FF:FF:FF:FF:FF.
 
-**Cross-Platform:** TODO
+**Cross-Platform:** (From GfWL) Broadcast messages are sent over IPv4 UDP
+port 3074, with a source IP of the local network adapter and a desination
+address off 255.255.255.255.
 
 ### General Structure
 
-| Offset   | Type / Size | Description                         |
-| -------- | ----------- | ----------------------------------- |
-| `0x0`    | uint32      | Header flags *(TODO: Check?)*       |
-| `0x4`    | variable    | Encrypted packet data               |
-| variable | Footer      | Metadata about the packet           |
+| Offset   | Type / Size | Description                   |
+| -------- | ----------- | ----------------------------- |
+| `0x0`    | uint32      | Header flags *(TODO: Check?)* |
+| `0x4`    | variable    | Encrypted packet data         |
+| variable | Footer      | Metadata about the packet     |
 
 Note that parts of the footer will be encrypted depending on the length of the
 packet data.
