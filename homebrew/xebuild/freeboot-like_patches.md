@@ -214,4 +214,139 @@ AES decryption, whereas a signed one will. Very clever!
 
 ## Kernel
 
-TODO
+(TODO: Cleanup.)
+
+```
+; XexpConvertError
+0007B920
+00000002
+386000004E800020
+
+; XexpLoadXexHeaders: call to XexpVerifyMediaType
+0007C4B8
+00000001
+38600001
+
+; XexpLoadFile: call to RtlImageXexHeaderString
+0007C5E8
+00000001
+38600000
+
+; XexpLoadFile: flag check in XEX headers after RtlImageXexHeaderString
+0007C634
+00000001
+39600000
+
+; XexpLoadFile: flag check in XEX headers after RtlImageXexHeaderField
+0007C684
+00000001
+39600000
+
+; XexpVerifyMinimumVersion
+0007AF08
+00000002
+386000004E800020
+
+; SfcxInspectLargeDataBlock
+00094F78
+00000001
+3AE00010
+
+; SataCdRomAuthenticationExInitialize: cmplwi rA, 0x1
+000998D0
+00000001
+2B0B00FF
+
+; SataCdRomActivateHCDFRuntimePatch: call to VdDisplayFatalError
+000992B4
+00000005
+3860000060000000600000006000000060000000
+
+; XeKeysVerifyRSASignature
+00109C90
+00000002
+386000014E800020
+
+; XeKeysSecurityConvertError
+0010A788
+00000002
+386000004E800020
+
+; XeKeysDvdAuthExConvertError
+0010AA68
+00000002
+386000004E800020
+
+; XeKeysRevokeIsValid
+0010AF30
+00000002
+386000014E800020
+
+; XeKeysRevokeIsRevoked
+0010B138
+00000002
+386000004E800020
+
+; _XeKeysRevokeIsRevoked
+0010B0E8
+00000002
+386000004E800020
+
+; XeKeysRevokeIsDeviceRevoked
+0010B278
+00000002
+386000004E800020
+
+; XeKeysRevokeConvertError
+0010B3F8
+00000002
+386000004E800020
+
+; XeKeysConsoleSignatureVerification
+0010BF20
+00000005
+2B05000038600001419A0008906500004E800020
+
+; XeCryptBnQwBeSigVerify
+00111990
+00000002
+386000014E800020
+
+; MassConfigureTransferCable: todo: check
+000E1754
+00000001
+48000054
+
+; MassConfigureTransferCable: todo: check
+000E17CC
+00000003
+835C00986000000060000000
+
+; SataDiskAuthenticateDevice
+0015D9D8
+00000002
+386000014E800020
+
+; shellcode inserted into the "dead" body of XeKeysConsoleSignatureVerification.
+; loads dashlaunch, etc. TODO: study
+0010BF40
+0000002C
+[shellcode]
+
+; Phase1Initialisation: replace a check to see if Xam failed with a branch to
+; the above shellcode
+000613CC
+00000001
+480AAB75
+
+; XexLoadExecutable: branch probably into the above shellcode
+0007D7F8
+00000001
+4808E785
+
+; Replaces some jump to a syscall with a branch to some "li r3, 0; (stack return)".
+; No idea. TODO: What does this do?
+00108E70
+00000001
+48003134
+```
