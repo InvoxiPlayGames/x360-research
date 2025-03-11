@@ -116,7 +116,7 @@ Patches a ton of HvxSecurity functions to return 0 and do nothing else.
 
 ### HvxKeysGetKey patch
 
-`0x6D58` = `48000030`
+`0x813C` = `48000030`
 
 Skips a check on both the key's flags and current XeKeys flags to allow
 HvxKeysGetKey to return any key in the keyvault.
