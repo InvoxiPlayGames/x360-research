@@ -303,6 +303,7 @@ AES decryption, whereas a signed one will. Very clever!
 386000004E800020
 
 ; XeKeysConsoleSignatureVerification
+; shellcode checks if r5 (is current console) is 0, if it isn't, writes 1 to it
 0010BF20
 00000005
 2B05000038600001419A0008906500004E800020
@@ -331,7 +332,53 @@ AES decryption, whereas a signed one will. Very clever!
 ; loads dashlaunch, etc. TODO: study
 0010BF40
 0000002C
-[shellcode]
+
+dashlaunch_load_shellcode:
+  ; only launch dashlaunch if xam succeeded, else exit Phase1Initialization
+  bge cr6, load_dashlaunch
+  blr
+
+load_dashlaunch:
+  ; XexLoadImage("\Device\Flash\launch.xex", 8, 0, 0);
+  lis r3, 0x8010
+  lis r5, 0
+  li r4, 0
+  ori r4, r4, 8
+  ori r3, r3, 0xbfd0 ; 0x8010BFD0 - path to \Device\Flash\launch.xex
+  li r6, 0
+  bl XexLoadImage
+
+  ; sets a flag so we know we at least attempted to load dashlaunch
+  ; *(uint32_t *)0x8010BFEC = 0
+  li r3, 0
+  lis r4, 0x8010
+  ori r4, r4, 0xbfec
+  isync 
+  stw r3, 0(r4)
+  b after_dashlaunch_load_shellcode_hook ; continue Phase1Initialization
+
+; TODO
+  addi r5, r1, 0x54
+  lis r7, -0x7ff0
+  ori r7, r7, 0xbfec
+  lwz r8, 0(r7)
+  isync 
+  cmplwi cr6, r8, 0
+  beq cr6, 0x8010bfa0
+  mr r31, r31
+  b 0x8010bf88
+  blr 
+  cmplwi cr6, r3, 0x14
+  bne cr6, 0x8010bfcc
+  lis r7, -0x7ff0
+  ori r7, r7, 0xbfec
+  lwz r8, 0(r7)
+  isync 
+  cmplwi cr6, r8, 0
+  beq cr6, 0x8010bfcc
+  mr r31, r31
+  b 0x8010bfb4
+  b 0x80108410
 
 ; Phase1Initialisation: replace a check to see if Xam failed with a branch to
 ; the above shellcode
