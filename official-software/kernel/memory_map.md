@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Kernel**
 
-Updated 27th January 2024.
+Updated 15th March 2025.
 
 # Memory Map
 
@@ -63,7 +63,7 @@ Pages in this area are 64KB aligned.
 | `0x8D000000` | TODO     | Title encrypted allocations         | TODO         |
 | `0x8E000000` | 0x20000  | Certificate revocation list (CRL)   | `0x01EF0000` |
 | `0x8E030000` | 0x10000  | Hypervisor data mirror (flags, etc) | `0x01F10000` |
-| `0x8E050000` | 0x10000  | XEX2 header copies(?)               | `0x01F20000` |
+| `0x8E050000` | 0x10000  | XEX2 headers                        | `0x01F20000` |
 
 XEX2 images loaded into this space should have a base address between
 `0x80400000 - 0x8C000000`. (TODO: check hard limits)

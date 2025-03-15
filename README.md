@@ -51,11 +51,12 @@ information:
 * [TEIR1plus2's Xbox-Reversing](https://github.com/TEIR1plus2/Xbox-Reversing)
 * [ihatecompvir's x360-hv-notes](https://github.com/ihatecompvir/x360-hv-notes)
 * [Grimdoomer's Xbox 360 hypervisor article](https://icode4.coffee/?p=1047)
+* [Byrom's Xbox_360_Research](https://github.com/Byrom90/Xbox_360_Research)
 
 I likely wouldn't know nearly as much as I do if not for all the great open source
 projects detailing how parts of this system work, and all the people behind them. 
 
-And an extra shoutout to the #coding-corner channel in the
+And an extra shoutout to folks from the #coding-corner channel in the
 [Xbox 360 Hub](https://xbox360hub.com/) Discord.
 
 ## Removal Requests

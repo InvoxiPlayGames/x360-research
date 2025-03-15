@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Homebrew - xeBuild**
 
-Updated 11th March 2025.
+Updated 15th March 2025.
 
 Incomplete stub page.
 
@@ -18,6 +18,10 @@ versions, et cetera.
 
 All offsets for this are for the latest released hypervisor/kernel, 17559.
 
+Some information here was referenced from
+[Byrom's research](https://github.com/Byrom90/Xbox_360_Research) as well as the
+[RGLoader patchset](https://github.com/RGLoader/RGLoader-Patches). Thank you!
+
 ## Hypervisor
 
 ### Initialisation Patch
@@ -27,11 +31,11 @@ All offsets for this are for the latest released hypervisor/kernel, 17559.
 Replaces a call to one of the startup functions with a branch to some shellcode
 at `0xB510`. (See below for more)
 
-### 0xF0 data clear
+### Devkit XEX AES key
 
 `0xF0` = `00000000 00000000 00000000 00000000`
 
-No idea.
+Stores the devkit XEX AES key here for later use.
 
 ### Memory Protection Patch
 
@@ -78,13 +82,13 @@ Replaces a call to a function that checks the current fuse values with a nop.
 Removes a check in HvxLoadImageData after a call to XeCryptMemDiff on a SHA-1
 hash of an XEX's memory page(?).
 
-### Unknown HvxResolveImports patches
+### HvxResolveImports revision check patches
 
 `0x2AA80` = `60000000`
 
 `0x2AA8C` = `60000000`
 
-Patches two checks in HvxResolveImports. No idea what they do yet.
+Patches two checks in HvxResolveImports to bypass STATUS_REVISION_MISMATCH.
 
 ### Initialisation and syscall 0 shellcode.
 
@@ -144,26 +148,27 @@ Nops out several branches to the machine check vector after various checks on
 the keyvault. The latter of these patches forces a value at 0x74 to always be 1.
 (TODO: Look into what this actually is doing.)
 
-### Patch Media ID check?
+### Patch XGD2/DVD Media ID check
 
 `0x24D58` = `38600001 4E800020`
 
 Replaces a function that is called by HvxImageTransformImageKey and
-HvxCreateImageMapping to always return 1. Seems to be related to the DVD auth
-media ID.
+HvxCreateImageMapping related to XGD2 Media ID to always return 1.
 
 ### Patch FCRT hash check
 
 `0x264F0` = `38600001`
 
-Replaces a branch to a hash checking function (?) within a HvxDvdAuthFcrt
-subroutine to always return true.
+Replaces a branch to a PKCS#1 verification within a HvxDvdAuthFcrt subroutine to
+always return true.
 
 ### XEX key derivation patch shellcode
 
 `0x29B08` = shellcode
 
-TODO. Looks to be to allow devkit XEXs to decrypt.
+TODO. Looks to be to allow devkit XEXs to decrypt, if the XEX signature check
+fails it will attempt to decrypt it with the devkit XEX2 AES key stored at 0xF0
+by one of the patches above.
 
 ### HvxImageTransformImageKey protected flag check patch
 
@@ -182,7 +187,8 @@ Removes a hash check during HvxCreateImageMapping.
 
 `0x2CDD8` = `60000000`
 
-Removes a keys flags check during HvxCreateImageMapping.
+Removes a keys flags check during HvxCreateImageMapping. Possibly region
+related?
 
 ### HvxExpansionInstall signature/encryption patches
 
