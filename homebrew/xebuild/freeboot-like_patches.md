@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Homebrew - xeBuild**
 
-Updated 15th March 2025.
+Updated 20th March 2025.
 
 Incomplete stub page.
 
@@ -166,9 +166,29 @@ always return true.
 
 `0x29B08` = shellcode
 
-TODO. Looks to be to allow devkit XEXs to decrypt, if the XEX signature check
-fails it will attempt to decrypt it with the devkit XEX2 AES key stored at 0xF0
-by one of the patches above.
+```
+xex_load_patch:
+    cmpldi cr6, r28, 0          ; r28 = address of XEX image key
+    beq cr6, finish_load_patch  ; skip past XeCryptAesKey call entirely if NULL
+    cmpwi cr6, r3, 0            ; compare result of XeCryptSigVerify
+    bne cr6, retail_key_path    ; if it's TRUE use the retail key path
+    li r4, 0xf0                 ; if it's FALSE set r4 to address of the devkit key
+    b do_key_decrypt            ; jump to the decryption
+    nop                         ; nop over some of the original code
+retail_key_path:
+    cmplwi cr6, r29, 0          ; check if one of the XEX flags is set
+    addi r4, r31, 0x440         ; set r4 to the offset of the XEX1 key
+    bne cr6, do_key_decrypt     ; if the flag isn't set, do the decrypt with XEX1 key
+    li r4, 0x54                 ; use the retail XEX2 key
+do_key_decrypt:
+    mr r3, r28
+    bl 0x200f8 ; XeCryptAesKey
+finish_load_patch:
+    li r31, 0
+```
+
+If the XEX signature check fails it will attempt to decrypt it with the devkit
+XEX2 AES key stored at 0xF0.
 
 ### HvxImageTransformImageKey protected flag check patch
 
