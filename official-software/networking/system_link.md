@@ -1,8 +1,6 @@
 **Emma's Xbox 360 Research Notes - Networking**
 
-Updated 11th March 2025.
-
-Stub page.
+Updated 29th November 2025.
 
 # System Link
 
@@ -14,9 +12,10 @@ This article also applies to Games for Windows - LIVE, in sections discussing
 cross-platform system link.
 
 Some information on this page was referenced from Xenia's partial
-[XNet Implementation](https://github.com/xenia-project/xenia/blob/systemlink/src/xenia/kernel/xnet.cc).
+[XNet Implementation](https://github.com/xenia-project/xenia/blob/systemlink/src/xenia/kernel/xnet.cc),
+the rest comes from my own research of XAM and xlive.dll.
 
-## Encryption Key Initialisation
+## Title Encryption Key Initialisation
 
 When a title initialises WinSock and XNet, `CXnIp::IpInit` initialises several
 encryption keys, for HMAC validation, DES3 packet encryption, and a feed value
@@ -27,12 +26,15 @@ header value 0x40404 (16 byte fixed-sized structure with ID 0x0404) on Xbox 360,
 or the `lankey` value from the .cfg XML next to the game executable on GfWL,
 and using that to build 3 keys forming a buffer of size 0x3C bytes.
 
+These keys are used for encrypting and verifying the integrity of broadcast
+packets, as well as a basis for generating encryption keys per-connection.
+
 **Key Buffer:**
 
 When building the key buffer, numbers 0 through 2 are prefixed at the start of
 the LAN key and then hashed with either HMAC SHA-1 with the roamable obfuscation
-key (Xbox 360), or encrypted* and then a regular SHA-1 (GfWL / cross-platform)
-performed on it.
+key (Xbox 360), or encrypted* with the cross-platform system link key and then a
+regular SHA-1 (GfWL / cross-platform) performed on it.
 
 *\* The LAN key is encrypted - the prefix byte remains unencrypted.*
 
@@ -89,9 +91,10 @@ void initialise_ip_encryption(CXnIp *this) {
     } else
 #endif
     {
+        uint8_t zero_iv[0x10] = {0};
         // encrypt the title key with the cross-platform system link key,
         // protected by the hypervisor / some mad x86 fuckery
-        int r = XeKeysAesCbc(XPLAT_SYSLINK_KEY, config_buffer.key, 0x10, config_buffer.key, &key_buffer /*this is IV, what?*/, ENCRYPT);
+        int r = XeKeysAesCbc(XPLAT_SYSLINK_KEY, config_buffer.key, 0x10, config_buffer.key, zero_iv, ENCRYPT);
         if (!r) // encryption failed, use random key, useless
             XeCryptRandom(config_buffer.key, sizeof(config_buffer.key))
         
@@ -117,8 +120,6 @@ void initialise_ip_encryption(CXnIp *this) {
 
 ## Broadcast Packet Structure
 
-*(TODO: This is for broadcast on 360 packets, but what about P2P/xplat? Check)*
-
 All values are in little endian. Why?
 <!-- I know why, I just don't like little endian.-->
 
@@ -126,9 +127,9 @@ All values are in little endian. Why?
 with a source IP of 0.0.0.1 and a destination IP address of 255.255.255.255.
 The destination MAC address is FF:FF:FF:FF:FF:FF.
 
-**Cross-Platform:** (From GfWL) Broadcast messages are sent over IPv4 UDP
-port 3074, with a source IP of the local network adapter and a desination
-address off 255.255.255.255.
+**Cross-Platform / GfWL:** Broadcast messages are sent over IPv4 UDP port 3074,
+with a source IP of the local network adapter and a desination address of
+255.255.255.255.
 
 ### General Structure
 
@@ -143,18 +144,41 @@ packet data.
 
 ### Footer
 
-*(TODO: Document flag to make source/dest ports 1/0 bytes with port 1000-1001)*
+#### General Footer
+
+| Offset | Type / Size | Description                   |
+| ------ | ----------- | ----------------------------- |
+| `0x0`  | uint32      | Title ID                      |
+| `0x4`  | uint32      | Title version                 |
+| `0x8`  | uint32      | System (XAM or Xlive) version |
+| `0xC`  | uint8       | Bytes encrypted divided by 8  |
+| `0xD`  | uint16      | Seed value for the CBC IV     |
+| `0xF`  | byte[0xA]   | HMAC SHA-1 checksum           |
+
+#### Port Number
+
+Depending on flag values, the port number is prepended to the footer, with
+either a 1-byte or 2-byte port number (for 2 bytes and 4 bytes total,
+respectively).
+
+If the port number is 1000, no bytes are prepended to the footer.
+
+Unlike the general footer, the port number can be included as padding in the
+3DES encrypted area of the packet.
+
+**1-byte port (ports 1001-1255):**
+
+| Offset | Type / Size | Description                   |
+| ------ | ----------- | ----------------------------- |
+| `0x0`  | uint8       | Source port (subtract 1000)   |
+| `0x1`  | uint8       | Destination port (- 1000)     |
+
+**2-byte port (ports 0-65535):**
 
 | Offset | Type / Size | Description                   |
 | ------ | ----------- | ----------------------------- |
 | `0x0`  | uint16      | Source port                   |
 | `0x2`  | uint16      | Destination port              |
-| `0x4`  | uint32      | Title ID                      |
-| `0x8`  | uint32      | Title version                 |
-| `0xC`  | uint32      | System kernel version         |
-| `0x10` | uint8       | Bytes encrypted divided by 8  |
-| `0x11` | uint16      | Seed value for the CBC IV     |
-| `0x13` | byte[0xA]   | HMAC SHA-1 checksum           |
 
 ### Encryption
 
@@ -167,22 +191,24 @@ The initialisation vector for these packets is generated by:
   them as 64-bit integers with the new 32-bit seed.
 * Filling the output IV by XORing the 32-bits of one of the above integers with
   another
-  * Also bitshifts, I'll be honest this is really hard to describe, pseudocode
-    is below.
+  * Also bitshifts, I'll be honest this is really hard to describe, C code is
+    below.
 
-**Pseudocode:**
+**C code:**
 
 ```cpp
-void calculate_iv(uint8_t *lan_cbc_feed, uint16_t seed, uint8_t *out_iv) {
-    uint32_t seedExt = (seed << 16) | seed;
+void calculate_iv(uint8_t *lan_cbc_feed, uint32_t seed, uint8_t *out_iv) {
     uint64_t k[2];
     // multiply the CBC feed values by the seed
-    k[0] = *(uint32_t *)(lan_cbc_feed + 0x0) * seed;
-    k[1] = *(uint32_t *)(lan_cbc_feed + 0x4) * seed;
+    k[0] = (uint64_t)(*(uint32_t *)(lan_cbc_feed + 0x0)) * (uint64_t)seed;
+    k[1] = (uint64_t)(*(uint32_t *)(lan_cbc_feed + 0x4)) * (uint64_t)seed;
     // chuck them into the output, XORing them with each other
-    *(uint32_t *)(out_iv + 0x0) = (k[1] >> 32) ^ k[0];
-    *(uint32_t *)(out_iv + 0x4) = k[1]^ (k[0] >> 32);
+    *(uint32_t *)(out_iv + 0x0) = (uint32_t)(k[1] >> 32) ^ (uint32_t)(k[0] & 0xFFFFFFFF);
+    *(uint32_t *)(out_iv + 0x4) = (uint32_t)(k[1] & 0xFFFFFFFF) ^ (uint32_t)(k[0] >> 32);
 }
+
+uint32_t seed_ext = (packet->iv_seed << 16) | packet->iv_seed;
+calculate_iv(crypt->lan_cbc_feed, seed, &out_iv);
 ```
 
 #### Encryption/decryption
@@ -191,5 +217,12 @@ Encryption/decryption is done using 3DES encryption, with the IV generated as
 above.
 
 The data is encrypted starting at offset 0x4 in the packet, and encrypts the
-length of data specified in the footer (multiplied by 8), even if it crosses
-into the footer's starting boundaries.
+length of data specified in the footer (multiplied by 8).
+
+#### HMAC SHA-1 verification
+
+The HMAC SHA-1 in the footer is generated by concatenating the decrypted footer
+of the packet (with the upper 16 bits of the IV seed and the packet header
+flags replacing the HMAC SHA-1) with the encrypted contents of the packet.
+
+*(TODO: Explain and demonstrate this better.)*
