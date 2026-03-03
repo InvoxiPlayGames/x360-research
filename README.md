@@ -52,6 +52,7 @@ information:
 * [ihatecompvir's x360-hv-notes](https://github.com/ihatecompvir/x360-hv-notes)
 * [Grimdoomer's Xbox 360 hypervisor article](https://icode4.coffee/?p=1047)
 * [Byrom's Xbox_360_Research](https://github.com/Byrom90/Xbox_360_Research)
+* [sanjay900's Santroller](https://github.com/santroller/santroller)
 
 I likely wouldn't know nearly as much as I do if not for all the great open source
 projects detailing how parts of this system work, and all the people behind them. 

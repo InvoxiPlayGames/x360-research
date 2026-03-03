@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - System Software**
 
-Updated 26th January 2024.
+Updated 3rd March 2026.
 
 # Software Updates
 
@@ -80,8 +80,16 @@ stages that can be installed.
 One big TODO. Just notes.
 
 Handled by `systemupdate2pre.xex`. Involves XeKeysExecute payloads and has
-differing code depending on detected model identifier. `oddupdX.xex` files
-look to contain no code and are just encrypted firmware blobs?
+differing code depending on detected model identifier.
+
+The `oddupdX.xex` files contain no code and only 1 resource containing
+firmware blobs for specific drive models:
+
+| ODD Update File | Drive Model | Version (per 13141+) |
+|-----------------|-------------|----------------------|
+| `oddupd1.xex`   | DG-16D4S    | 0272                 |
+| `oddupd2.xex`   | VAD6038     | 0442                 |
+| `oddupd3.xex`   | DG-16D2S    | 0251                 |
 
 The XeKeysExecute payloads work with the DVD key in the key vault for some
 purpose or another. They never leave hypervisor mode unencrypted.
