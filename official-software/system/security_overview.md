@@ -1,8 +1,9 @@
 **Emma's Xbox 360 Research Notes - System Software**
 
-Updated 7th March 2025.
+Updated 17th October 2026.
 
-"Stub" page, not in-depth, just trying to put some notes and thoughts here:
+"Stub" page, not in-depth, just trying to put some notes and very opinionated
+thoughts here:
 
 # Software Security Overview
 
@@ -18,11 +19,18 @@ software-only hypervisor mode code execution:
 - "King Kong" syscall handler exploit in 2007 (4532/4548), patched in 2007
   - https://free60.org/Hacks/King_Kong_Hack/
   - Patched in kernel version 4552.
-  - Hypervisor versions 4532/4548 blacklisted in the bootloader with 8498.
+  - Hypervisor versions 4532/4548 blacklisted in the bootloader with 8498 (2009)
 - "Xbox360BadUpdate" exploit chain in 2025 (??-17559), **unpatched**
   - https://github.com/Grimdoomer/Xbox360BadUpdate
   - https://icode4.coffee/?p=1047 - "System Overview"
   - https://icode4.coffee/?p=1081 - "The Bad Update Exploit"
+
+As of 2026, it is now possible to gain code execution at system bootup on all
+motherboard revisions produced between 2005 and ~2011 without hardware
+modification:
+- "Xbox360PeerPreessuree" exploit chain (??-17559), **unpatched**
+  - https://github.com/grimdoomer/Xbox360PeerPressure (closed source. :/)
+  - Writeup pending
 
 ## Security Features
 
@@ -42,7 +50,8 @@ software-only hypervisor mode code execution:
     * Security features are in heavy use in the hypervisor, e.g. stack canaries,
       and boundary checks. Nothing passed from userland can ever try to reference
       the hypervisor address space.
-    * In the past 20 years, only 1 flaw has been published in the hypervisor.
+    * In the past 21 years, only 2 flaws have been published in the retail
+      hypervisor.
     * E-fuses prevent downgrading the hypervisor using previous NAND backups, and
       prevent all bootloader downgrades. The 2 vulnerable hypervisor versions,
       4532 and 4548, are blacklisted in newer bootloaders.
@@ -72,9 +81,13 @@ software-only hypervisor mode code execution:
     * Random AES keys are chosen at startup by 2BL, with help from hardware RNG.
       The 2BL also checks to make sure there's sufficient randomness so the RNG
       can't be rigged or disabled in hardware.
+* (2011+) More hardware protection against DMA
+    * "KSB" southbridge revision introduced with "Corona" motherboards hardens
+      against access to DMA registers, preventing the SMC Hack (2009) and
+      Peer Pressure (2026). *(TODO: How?)*
 * (2014+) Hardware protection against glitching
-    * "Winchester" motherboards have POST output disabled by e-fuses, and the
-      reset line is latched to prevent RGH.
+    * "Winchester" motherboards have POST output disabled when security bits are
+      blown in e-fuses, and the reset line is latched to prevent RGH.
 
 ## Security Pitfalls
 
@@ -94,22 +107,31 @@ software-only hypervisor mode code execution:
   plenty of games are not, as was standard for the time for performance reasons.
     * Games can be patched when the system is connected to Live, but being
       offline and clearing cache makes the system vulnerable again.
-* Due the kernel running under a 32-bit address space, despite being a 64-bit
-  platform, none of the more advanced security features such as ASLR and PAC
-  could be used effectively, and in fact weren't used at all. This, combined
-  with the lack of stack canaries, makes exploiting userland trivial.
+    * The kernel and XAM, both critical system components, are not compiled with
+      stack canaries, allowing vulnerabilities in those to be used to exploit
+      the system.
+        * [ABadAvatar](https://github.com/shutterbug2000/ABadAvatar) (shutterbug2000, 2025)
+* While the CPU's JTAG bus is disabled during Power-On-Reset (POR) if the CPU
+  is fused as security-enabled, the GPU's JTAG bus is not disabled until the
+  CB / 2BL completes "HWINIT", allowing an attack to be launched via the GPU's
+  JTAG lines before it gets disabled.
+    * [SMC Hack / "JTAG"](https://github.com/Free60Project/tools/blob/master/imgbuild/hack.txt) (tmbinc, Tiros, et al., 2009)
 * System management controller / SMC / Southbridge firmware is not signed,
   meaning it can be replaced to modify the behaviour or be used to attack the
-  CPU (see: SMC Hack, RGH3 - as well as all other RGH variants rebooting rather
-  than RRoD on failed boots)
+  CPU. This has been one of the core enablers of every known user-facing
+  hardware-based attack on the Xbox 360:
+    * [SMC Hack / "JTAG"](https://github.com/Free60Project/tools/blob/master/imgbuild/hack.txt) (tmbinc, Tiros, et al., 2009)
+    * [Reset Glitch Hack](https://github.com/Free60Project/tools/blob/master/reset_glitch_hack/reset_glitch_hack.txt) (GliGli, Tiros, et al., 2011)
+    * [RGH3](https://ptswarm.com/blog/xbox-360-security-in-details-the-long-way-to-rgh3/) (15432, 2021)
+    * [PeerPressure](https://github.com/grimdoomer/Xbox360PeerPressure) (Grimdoomer, 2026)
 * The hypervisor does not check userland page permissions before writing data
   to a user-controlled pointer, allowing for userland exploits to overwrite the
   (unencrypted view of) memory in any write-protected page. Related ...
 * ... the memory management unit only hashes the hypervisor's memory space,
   allowing for userland exploits to corrupt kernel, XAM and game ciphertext in
-  ways that may result in a favourable plaintext when decrypted. (See:
-  Xbox360BadUpdate's "Stage 2" - as well as yet-to-be-disclosed kernel patching
-  by [ihatecompvir](https://wetdry.world/@ihatecompvir/113359460700460045))
+  ways that may result in a favourable plaintext when decrypted.
+  * [BrutalBranch](https://github.com/ihatecompvir/BrutalBranch) (ihatecompvir, Emma (IPG), January 2024)
+  * [Xbox360BadUpdate](https://icode4.coffee/?p=1081#:~:text=Attacking%20Encrypted%20Memory) (Grimdoomer, September 2024)
 
 ## References
 

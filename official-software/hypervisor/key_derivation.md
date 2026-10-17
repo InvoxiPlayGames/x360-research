@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Hypervisor**
 
-Updated 22nd February 2024.
+Updated 17th October 2026.
 
 # Key Derivation
 
@@ -11,7 +11,8 @@ required to decrypt executables, game discs, content packages, etc is by dumping
 from a currently running console that you have code execution on, or finding the secret
 value and deriving them yourself.
 
-These keys are obfuscated with a value that stems from inside the CPU's security engine.
+These keys are obfuscated with a value that stems from inside the CPU's security engine,
+known as the "integrity violation signature" and calculated by the CPU's SOC itself.
 The code that loads this value is located at `0x2DC8` in the current latest hypervisor
 (17559), but can be located by searching for the instruction `std rX, 0x18(0)`, as this
 value is always stored at offset `0x18` in memory during hypervisor initialisation.
@@ -23,14 +24,15 @@ value on a regular Xbox 360 has a CRC32 of `0x4B17A409`. (Begins `81300D...`)
 *(Note: If reading from HV or libxenon context, you must make sure this value is fetched
 with an "ld" instruction, otherwise the system could lock up.)*
 
-*(TODO: It'd be nice to find out what this value means, and what affects it.)*
+The only known scenario where this signature is different is on CPUs that have not had
+security-enable bits blown into their fuse sets ("zero-fuse" systems).
 
 The derivation process consists of calls to XeCryptHmacSha, with the aforementioned key 
 being used as the HMAC key, and the "root data" for each given key being used as the input
 value. The final 4 bytes of the HMAC SHA-1 are cut off. For example:
 
 ```c
-XeCryptHmacSha(&gCpuSecurityKey, 0x8, gRootKeyXEX2, 0x10, NULL, 0, NULL, 0, gActualKeyXEX2, 0x10);
+XeCryptHmacSha(&gCpuIntegrityViolationSignature, 0x8, gRootKeyXEX2, 0x10, NULL, 0, NULL, 0, gActualKeyXEX2, 0x10);
 ```
 
 ## Encryption Keys
@@ -53,8 +55,6 @@ All of these keys are 16 bytes in length.
   * Final key CRC32: `0x5997D32D` (Begins `E1BC15...`)
   * This is loaded into the keyvault structure, not at a fixed spot in memory.
   * If the console's keyvault already has a key in that spot, this won't be used.
-
-*(TODO: Are there any more keys?)*
 
 ## Title Keys
 
@@ -86,7 +86,7 @@ int SetTitleKey(char *key_dest, PHYS_PTR(0x10) char *input_key, int key_len)
     XeCryptHmacShaUpdate(&ctx, gSalt1BL, 10);
 
     // The security value copied from the CPU during HV init.
-    XeCryptHmacShaUpdate(&ctx, &gCpuSecurityKey, 0x8);
+    XeCryptHmacShaUpdate(&ctx, &gCpuIntegrityViolationSignature, 0x8);
 
     // A bunch of different keys - this large buffer contains:
     // - 0x110 byte PIRS content verification (XEX, STFS) public key (key 0x39)

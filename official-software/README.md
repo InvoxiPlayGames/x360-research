@@ -13,6 +13,8 @@
 * Hypervisor
     * Key Derivation - Notes on how the hypervisor derives decryption keys for
       various parts of the system.
+    * Shadowboot - Information on how the "shadowboot" reboot process works on
+      devkit hypervisors.
 
 * Kernel
     * Memory Map - information about the way memory is mapped out in the official

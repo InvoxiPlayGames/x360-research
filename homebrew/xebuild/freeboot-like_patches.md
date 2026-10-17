@@ -1,5 +1,14 @@
 **Emma's Xbox 360 Research Notes - Homebrew - xeBuild**
 
+## Notice (17th October 2026)
+
+As of 3rd September 2026, the xeBuild patch sources were made public, so this
+document is a lot less necessary. Thanks, cOz!
+
+https://github.com/cOzInABox/XeBuild/blob/main/patches/17559/patches_kernel_17559.S
+
+## Original Document
+
 Updated 20th March 2025.
 
 Incomplete stub page.

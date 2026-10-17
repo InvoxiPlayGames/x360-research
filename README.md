@@ -12,6 +12,7 @@ I'm trying to document as much as I can about:
 * Official, offline software (bootloaders, hypervisor, kernel, etc)
 * Behaviour of production and devkit hardware and accessories
 * "Essential" homebrew (NAND image patches, XeLL/libxenon, Dashlaunch)
+* Software exploits
 
 I don't plan on documenting anything relating to Xbox Live, or community-made 
 homebrew. I also won't be posting any key material here - although the information
@@ -29,7 +30,9 @@ the years and unable to be fixed as the source code is long gone. Of course,
 this choice is still up to you. Please, take the right one.
 
 If you want to contribute to any of these pages, feel free to send a pull request,
-and put your name on it.
+and put your name on it. Please don't send LLM slop - I'm making this repo out of
+genuine interest to learn and understand this console fully and helping others do
+the same, not helping LLM agents make end products with no care for the process.
 
 ## Shoutouts
 
@@ -46,7 +49,7 @@ information:
 * The [RGLoader](https://github.com/RGLoader) project, and the
   [XDKbuild](https://github.com/xvistaman2005/XDKbuild) project.
 * [XenonLibrary wiki](https://xenonlibrary.com/wiki/Main_Page)
-* [XenonWiki wiki](http://web.archive.org/web/20240502195916/https://www.xenonwiki.com/Main_Page)
+* [XenonWiki wiki](http://web.archive.org/web/20240502195916/https://www.xenonwiki.com/Main_Page) (Internet Archive Link)
 * [DrSchottky's X360 Reversing tutorials](https://www.razielconsole.com/forum/showthread.php?t=943)
 * [TEIR1plus2's Xbox-Reversing](https://github.com/TEIR1plus2/Xbox-Reversing)
 * [ihatecompvir's x360-hv-notes](https://github.com/ihatecompvir/x360-hv-notes)
@@ -55,6 +58,8 @@ information:
 * [sanjay900's Santroller](https://github.com/santroller/santroller)
 * [Digiex](https://digiex.net/) forums and their large archive of Xbox 360
   dashboards.
+* [cOz's XeBuild](https://github.com/cOzInABox/XeBuild)
+* ["Xenon" emulator](https://github.com/xenon-emu/Xenon)
 
 I likely wouldn't know nearly as much as I do if not for all the great open source
 projects detailing how parts of this system work, and all the people behind them. 

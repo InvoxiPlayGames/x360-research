@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Kernel**
 
-Updated 15th March 2025.
+Updated 17th October 2026.
 
 # Memory Map
 
@@ -12,21 +12,21 @@ full 32-bit (4GB) address space using these virtual memory mappings.
 This page is solely regarding the userland's high-level view of this memory,
 and doesn't go into the details of the MMU, TLB or PTE structure.
 The tables below don't include the areas of memory allocated for executables,
-and are valid as of the latest retail kernel (17559), taken from a modded
-console. 
+and are valid as of the latest retail kernel (17559) and the latest publicly
+available devkit kernel (17489/21256.18).
 
 ## Kernel-managed Virtual Memory (4KB) (0x00000000-0x3FFFFFFF)
 
 Used when allocating 4KB pages with NtAllocateVirtualMemory? Needs more research.
 
-## Kernel-managed Virtual Memory (64KB) (0x40000000-0x7FFFFFFF)
+## Kernel-managed Virtual Memory (64KB) (0x40000000-0x7EFFFFFF)
 
 This address space is managed entirely by the kernel by a page table at
 `0x01F70000` (physical). It is used when allocating 64KB paged memory with
 NtAllocateVirtualMemory, and the 360 SDK's malloc/heap implementation allocates
 memory from this space by default.
 
-### Memory-Mapped I/O (0x7F000000)
+## Memory-Mapped I/O (0x7F000000)
 
 During kernel initialisation, certain hardware peripherals are mapped to this
 address space for MMIO access. This allows the kernel to access hardware such as
@@ -41,12 +41,13 @@ System Management Controller (SMC) and the XMA audio hardware.
 | `0x7FEA0000` | 0x10000  | PCI devices                         | `0xEA000000` |
 | `0x7FED0000` | 0x10000  | PCI configuration registers         | `0xD0010000` |
 
-## Executable + Encrypted Areas (0x80000000-0x9FFFFFFF)
+## Image Memory (0x80000000-0x9FFFFFFF)
 
 This address space is managed entirely by the hypervisor, rather than the
 kernel, and is the only memory space the kernel mode can execute code from.
 This is also the only memory space that the kernel can read encrypted and write
-hashed memory from (with the exception of hypervisor memory).
+hashed memory from (with the exception of hypervisor memory). XEX images are
+loaded by the kernel into this address space with approval from the hypervisor.
 
 Titles can allocate encrypted memory from this space with
 NtAllocateEncryptedMemory.
@@ -55,15 +56,16 @@ NtAllocateEncryptedMemory.
 
 Pages in this area are 64KB aligned.
 
-| Address      | Length   | Contents                            | Physical     |
-| ------------ | -------- | ----------------------------------- | ------------ |
-| `0x80000000` | 0x40000  | Encrypted hypervisor contents       | `0x00000000` |
-| `0x80040000` | Varies   | Xbox 360 kernel (xboxkrnl.exe)      | `0x00040000` |
-| `0x8C000000` | 0x20000? | System (XAM) encrypted allocations  | `0x01E70000` |
-| `0x8D000000` | TODO     | Title encrypted allocations         | TODO         |
-| `0x8E000000` | 0x20000  | Certificate revocation list (CRL)   | `0x01EF0000` |
-| `0x8E030000` | 0x10000  | Hypervisor data mirror (flags, etc) | `0x01F10000` |
-| `0x8E050000` | 0x10000  | XEX2 headers                        | `0x01F20000` |
+| Address      | Length   | Contents                              | Physical     |
+| ------------ | -------- | ------------------------------------- | ------------ |
+| `0x80000000` | 0x40000  | Encrypted hypervisor contents         | `0x00000000` |
+| `0x80040000` | Varies   | Xbox 360 kernel (xboxkrnl.exe)        | `0x00040000` |
+| `0x8C000000` | 0x20000? | System (XAM) encrypted allocations    | `0x01E70000` |
+| `0x8D000000` | TODO     | Title encrypted allocations           | TODO         |
+| `0x8E000000` | 0x20000  | Certificate revocation list (CRL)     | `0x01EF0000` |
+| `0x8E030000` | 0x10000  | Hypervisor data mirror (flags, etc)   | `0x01F10000` |
+| `0x8E050000` | 0x10000  | XEX2 headers                          | `0x01F20000` |
+| `0x8F040000` | 0x10000  | Image pagetable entries (DEVKIT ONLY) | `0x01F50000` |
 
 XEX2 images loaded into this space should have a base address between
 `0x80400000 - 0x8C000000`. (TODO: check hard limits)
