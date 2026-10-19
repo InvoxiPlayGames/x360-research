@@ -60,6 +60,7 @@ information:
   dashboards.
 * [cOz's XeBuild](https://github.com/cOzInABox/XeBuild)
 * ["Xenon" emulator](https://github.com/xenon-emu/Xenon)
+* [wurthless-elektroniks's "smc360"](https://github.com/wurthless-elektroniks/smc360)
 
 I likely wouldn't know nearly as much as I do if not for all the great open source
 projects detailing how parts of this system work, and all the people behind them. 
