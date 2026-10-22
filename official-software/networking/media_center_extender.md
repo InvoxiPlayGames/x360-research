@@ -117,7 +117,8 @@ container as `xboxmcx.xex`.
 
 ## Known Extender XEX files
 
-These are just the Media Center Extender files I've been able
+These are just the Media Center Extender files I've been able to find.
+This is an incomplete list.
 
 ### Retail
 
