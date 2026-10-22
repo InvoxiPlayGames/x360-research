@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Networking**
 
-Updated 22nd October 2026.
+Updated 23rd October 2026.
 
 # Windows Media Center Extender
 
@@ -40,7 +40,7 @@ in system32) and attempt to find the "right" XEX file.
 
 The locations XEX files are searched for:
 * **Windows XP MCE**: *TODO*
-* **Windows Vista, 7**: `%SystemRoot%\Windows\ehome\MCX\`
+* **Windows Vista and 7**: `%SystemRoot%\Windows\ehome\MCX\`
 
 The subdirectory in the MCX folder is decided by the "type" parameter in the
 `urn:schemas-microsoft-com:nhed:attributes` segment in the AL header.
@@ -111,8 +111,8 @@ Sent by the Xbox after verifying the XEX file. The PC closes the connection
 after this packet is received.
 
 If the Xbox has a properly formatted HDD connected, it will store the XEX file
-in a savegame container for the "Xbox 360 Dashboard" title ID (`FFFE07D1`) as a
-system title (`000A0000`), named `MCXFile`. The XEX2 will be saved in this
+in a console-signed container for the "Xbox 360 Dashboard" title ID (`FFFE07D1`)
+as a system title (`000A0000`), named `MCXFile`. The XEX2 will be saved in this
 container as `xboxmcx.xex`.
 
 ## Known Extender XEX files
@@ -120,21 +120,53 @@ container as `xboxmcx.xex`.
 These are just the Media Center Extender files I've been able to find.
 This is an incomplete list.
 
-### Retail
+(Thank you to pivotman319 for helping find most of these!)
 
-| Filename | OS | XEX2 Version | XEX2 Title ID | PE timestamp (UTC) | SHA256 |
-|-|-|-|-|-|-|
-| XboxMcx.xex | Windows XP MCE 2005\* | v2.0.12980.9 | `584507D1` (XE-2001) | October 26th 2005, 00:48:45 | 5c3750daa4a797429d4c2795ddc4e15046f15c539201d9793b1e44c8da7efed4 |
-| XboxMCX-V.XEX | Windows Vista SP2\*\* | v2.0.22860.0 | `584507D2` (XE-2002) | February 28th 2008, 22:04:16 | c3a7af890f9023c83fb742540d2f4e409084166793e14ee2737ab3f821ea8494 |
-| XboxMCX-V.XEX | Windows 7 | v2.0.25960.4 | `584507D3` (XE-2003) | May 22nd 2009, 15:38:11 | 468e674a29dc36b588e0d5186254e2e3f25efc6f3071f959e02bb64c58061a77 |
+**Windows XP MCE filename:** XboxMcx.xex
+
+**Windows Vista and 7 filename:** XboxMCX-V.XEX
+
+### Retail, Windows release
+
+Versions of the extender binary found in release Windows versions or shipped
+via Windows Update. These are all retail signed.
+
+| OS Build | XEX2 Version | XEX2 Title ID | PE timestamp (UTC) | SHA256 |
+|-|-|-|-|-|
+| Windows XP MCE 2005\* | v2.0.12980.9 | `584507D1` (XE-2001) | October 26th 2005, 00:48:45 | 5c3750daa4a797429d4c2795ddc4e15046f15c539201d9793b1e44c8da7efed4 |
+| Windows Vista (6.0.6000.16386) | v2.0.22690.0 | `584507D2` (XE-2002) | September 26th 2006, 22:31:02 | 2b97da190acc1e7d34a72afb314b9a0892138aa30e25f9d3be5049df328f818b |
+| Windows Vista (KB950125)\*\* | v2.0.22860.0 | `584507D2` (XE-2002) | February 28th 2008, 22:04:16 | c3a7af890f9023c83fb742540d2f4e409084166793e14ee2737ab3f821ea8494 |
+| Windows 7 (6.1.7600.16385) | v2.0.25960.4 | `584507D3` (XE-2003) | May 22nd 2009, 15:38:11 | 468e674a29dc36b588e0d5186254e2e3f25efc6f3071f959e02bb64c58061a77 |
 
 *\*: Windows XP MCE 2005 did not ship with the XEX, it was an optional update.*
 
-*\*\*: The XEX file is in SP2's release package but it may have been shipped in
-a Windows Update.*
+*\*\*: KB950125 is included in Windows Vista Service Pack 2.*
 
-### Devkit
+### Retail, Windows beta
 
-| Filename | OS | XEX2 Version | XEX2 Title ID | PE timestamp (UTC) | SHA256 |
-|-|-|-|-|-|-|
-| XboxMCX-V.XEX | 6.0.5365.8.winmain_idx05.060419-1800 | v2.0.20860.0 | `584507D2` (XE-2002) | March 28th 2006, 04:35:11 | eaefa698b5d7b7a280663ef6d715d50dc430de1d3705acd2af42819bd624686d |
+Versions of the extender binary found in beta builds of Windows that are retail
+Xbox 360 signed.
+
+Some of these builds may have been also shipped in release versions of Windows
+or via Windows Update; I haven't checked extensively.
+
+| OS Build | XEX2 Version | XEX2 Title ID | PE timestamp (UTC) | SHA256 |
+|-|-|-|-|-|
+| 6.1.6574.1 | v2.0.22720.0 | `584507D2` (XE-2002) | December 18th 2007, 23:51:59 | 74ea7ba022c5491bd2b5143791dca6296956d397f8837dddfb7a10dea568b24a |
+| 6.1.6730.1 | v2.0.22920.0 | `584507D2` (XE-2002) | March 5th 2008, 07:10:52 | 14a900dbddbf6c05160a3517ffd7ce7cbd7f89d4e54651d50d9a15bd97f7e9d1 |
+| 6.1.6758.0 | v2.0.22920.1 | `584507D2` (XE-2002) | March 5th 2008, 07:10:52 | abc9910ce177942e1a5abf2f0151a788e17bc877e6d0e789d6f59a8e5abeef59 |
+| 6.1.6776.0 | v2.0.25570.0 | `584507D2` (XE-2002) | August 1st 2008, 04:31:09 | 1d04ecad51e73cd2ad2028684ae8bfb7a70b035c2f112e7f66200bb8b0fe65c4 |
+| 6.1.7070.0 | v2.0.25960.0 | `584507D3` (XE-2003) | November 6th 2008, 23:19:42 | 793b4863031b63b07b62a56c0f48cc4e421b9e3ca5e3a97b16a308fe2bd6259e |
+| 6.1.7127.0 | v2.0.25960.2 | `584507D3` (XE-2003) | March 30th 2009, 22:04:56 | 9853d4b5c35880e240643c77b8289adcc08d03aa321c3bdf293d385898eeb74b |
+
+*(Note: All builds of Windows 6.1.7262.0 and up ship with v2.0.25960.4 of the
+extender, listed in the "Windows release" section.)*
+
+### Devkit, Windows beta
+
+Versions of the extender binary found in beta builds of Windows that are devkit
+Xbox 360 signed.
+
+| OS Build | XEX2 Version | XEX2 Title ID | PE timestamp (UTC) | SHA256 |
+|-|-|-|-|-|
+| 6.0.5365.8 | v2.0.20860.0 | `584507D2` (XE-2002) | March 28th 2006, 04:35:11 | eaefa698b5d7b7a280663ef6d715d50dc430de1d3705acd2af42819bd624686d |
