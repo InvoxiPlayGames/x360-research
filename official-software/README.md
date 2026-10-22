@@ -23,6 +23,8 @@
 * Networking - **no information here is about Xbox Live.**
     * System Link - The system link / LAN multiplayer connection and encryption
       process.
+    * Media Center Extender - The protocol used for the Windows Media Center
+      Extender feature of the 360.
 
 * System Software
     * Security Overview - A rough high-level overview of the security features

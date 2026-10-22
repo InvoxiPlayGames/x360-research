@@ -1,0 +1,139 @@
+**Emma's Xbox 360 Research Notes - Networking**
+
+Updated 22nd October 2026.
+
+# Windows Media Center Extender
+
+*(TODO: Pairing process, RDP-like stream, RTP-like stream(s).)*
+
+## Image Download
+
+Since there is not enough space on the 360's NAND to store the Media Center
+Extender, as well as to support the vastly different Windows Vista Media Center,
+the Xbox 360 talks a custom protocol to a service running on the PC that
+"finds the right XEX" and then sends that over TCP to the console.
+
+When the Media Center is paired and then attempted to be launched from the
+dashboard, the dashboard sends a wake on LAN packet for the paired Media Center
+PC's MAC address (repeatedly), `ssdp:byebye` as per \[MS-SSDP\], then the
+following SSDP broadcast packet:
+
+```
+NOTIFY * HTTP/1.1
+HOST:239.255.255.250:1900
+NT:urn:schemas-microsoft-com:nhed:presence:1
+NTS:ssdp:alive
+LOCATION:*
+CACHE-CONTROL:max-age=4
+AL:<urn:schemas-microsoft-com:nhed:attributes?type=X02&firmwarever=17559.0&udn=uuid:10000000-0000-0000-0200-xxxxxxxxxxxx&modelname=Xbox%20360&DvcFN=Xbox%20360&vendorid=1118&productid=2&hwrev=200&swrev=2&language=EN-US&manufacturer=Microsoft&imageheaderver=1074063928&affcode=153><urn:schemas-microsoft-com:nhed:download-target?address=192.168.50.58&port=1107>
+USN:uuid:00000000-0000-0000-0200-xxxxxxxxxxxx::urn:schemas-microsoft-com:nhed:presence:1
+SERVER:dashboard/1.0 UpnP/1.0 xbox/2.0
+```
+*(Note: Console MAC address replaced with `xxxxxxxxxxxx`.)*
+
+The console listens on the TCP port specified in the
+`urn:schemas-microsoft-com:nhed:download-target` segment of the `AL` header, and
+waits for Mcx2Svc on the Windows PC to wake up and connect to it.
+
+Upon recieving this SSDP request, the Windows PC will start up Mcx2Svc (located
+in system32) and attempt to find the "right" XEX file.
+
+The locations XEX files are searched for:
+* **Windows XP MCE**: *TODO*
+* **Windows Vista, 7**: `%SystemRoot%\Windows\ehome\MCX\`
+
+The subdirectory in the MCX folder is decided by the "type" parameter in the
+`urn:schemas-microsoft-com:nhed:attributes` segment in the AL header.
+
+*(TODO: What does Mcx2Srv check for in the XEX file?)*
+
+If a valid XEX2 isn't found in that folder, then no connection is made. If a
+suitable one is, a TCP connection is made speaking the following protocol:
+
+### "Device Info" / Image Download Protocol
+
+#### Packet Header
+
+The packet header is 8 bytes. All fields are big endian.
+
+| Offset | Type / Size | Description                  |
+| ------ | ----------- | ---------------------------- |
+| `0x0`  | uint32      | Packet magic (`0x51C674C0`)  |
+| `0x4`  | uint16      | Packet type                  |
+| `0x6`  | uint16      | Packet length (minus header) |
+
+#### Optional Header
+
+Data in this protocol is split into segments of "optional heders", in a
+Type-Length-Value structure. The header is 4 bytes.
+
+| Offset | Type / Size | Description                |
+| ------ | ----------- | -------------------------- |
+| `0x0`  | uint16      | Data type                  |
+| `0x2`  | uint16      | Data length (minus header) |
+
+#### `0x0141` Hello Packet (PC -> Xbox)
+
+This is the first packet sent once the PC connects to the Xbox. It consists of
+the following optional headers. All values little endian.
+
+| Type     | Type / Size | Description                                        |
+| -------- | ----------- | -------------------------------------------------- |
+| `0x0118` | uint32 (LE) | Status code, always 0                              |
+| `0x0110` | UUID / 0x10 | UUID of the Xbox, from `USN` header                |
+| `0x0113` | UUID / 0x10 | UUID of the PC's Media Center Extender certificate |
+| `0x0139` | uint32 (LE) | Length of the XEX2 file in bytes                   |
+| `0x019D` | uint32 (LE) | Version of the XEX2 file from the Execution ID     |
+
+After receiving this, the Xbox sends an Image Download Response packet.
+
+#### `0x0122` Image Download Response (Xbox -> PC)
+
+| Type     | Type / Size | Description                                         |
+| -------- | ----------- | --------------------------------------------------- |
+| `0x0118` | uint32 (LE) | Status code: 1 if the XEX2 file is cached, 0 if not |
+
+If the status code is 1, the PC closes the connection after receiving this, and
+the Xbox 360 launches the cached executable.
+
+If the status code is 0, the PC will then begin sending the XEX2 file over raw
+TCP, with no packet headers or structure.
+
+#### `0x0126` Image Download Stop (Xbox -> PC)
+
+| Type     | Type / Size | Description               |
+| -------- | ----------- | ------------------------- |
+| `0x0118` | uint32 (LE) | Status code: 0 on success |
+
+*(TODO: What are the failure status codes?)*
+
+Sent by the Xbox after verifying the XEX file. The PC closes the connection
+after this packet is received.
+
+If the Xbox has a properly formatted HDD connected, it will store the XEX file
+in a savegame container for the "Xbox 360 Dashboard" title ID (`FFFE07D1`) as a
+system title (`000A0000`), named `MCXFile`. The XEX2 will be saved in this
+container as `xboxmcx.xex`.
+
+## Known Extender XEX files
+
+These are just the Media Center Extender files I've been able
+
+### Retail
+
+| Filename | OS | XEX2 Version | XEX2 Title ID | PE timestamp (UTC) | SHA256 |
+|-|-|-|-|-|-|
+| XboxMcx.xex | Windows XP MCE 2005\* | v2.0.12980.9 | `584507D1` (XE-2001) | October 26th 2005, 00:48:45 | 5c3750daa4a797429d4c2795ddc4e15046f15c539201d9793b1e44c8da7efed4 |
+| XboxMCX-V.XEX | Windows Vista SP2\*\* | v2.0.22860.0 | `584507D2` (XE-2002) | February 28th 2008, 22:04:16 | c3a7af890f9023c83fb742540d2f4e409084166793e14ee2737ab3f821ea8494 |
+| XboxMCX-V.XEX | Windows 7 | v2.0.25960.4 | `584507D3` (XE-2003) | May 22nd 2009, 15:38:11 | 468e674a29dc36b588e0d5186254e2e3f25efc6f3071f959e02bb64c58061a77 |
+
+*\*: Windows XP MCE 2005 did not ship with the XEX, it was an optional update.*
+
+*\*\*: The XEX file is in SP2's release package but it may have been shipped in
+a Windows Update.*
+
+### Devkit
+
+| Filename | OS | XEX2 Version | XEX2 Title ID | PE timestamp (UTC) | SHA256 |
+|-|-|-|-|-|-|
+| XboxMCX-V.XEX | 6.0.5365.8.winmain_idx05.060419-1800 | v2.0.20860.0 | `584507D2` (XE-2002) | March 28th 2006, 04:35:11 | eaefa698b5d7b7a280663ef6d715d50dc430de1d3705acd2af42819bd624686d |
