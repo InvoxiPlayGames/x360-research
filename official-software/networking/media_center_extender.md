@@ -36,7 +36,7 @@ The console listens on the TCP port specified in the
 waits for Mcx2Svc on the Windows PC to wake up and connect to it.
 
 Upon recieving this SSDP request, the Windows PC will start up Mcx2Svc (located
-in system32) and attempt to find the "right" XEX file.
+in system32) and attempt to find the XEX file with the highest version number.
 
 The locations XEX files are searched for:
 * **Windows XP MCE**: *TODO*
@@ -44,8 +44,6 @@ The locations XEX files are searched for:
 
 The subdirectory in the MCX folder is decided by the "type" parameter in the
 `urn:schemas-microsoft-com:nhed:attributes` segment in the AL header.
-
-*(TODO: What does Mcx2Srv check for in the XEX file?)*
 
 If a valid XEX2 isn't found in that folder, then no connection is made. If a
 suitable one is, a TCP connection is made speaking the following protocol:
@@ -94,7 +92,8 @@ After receiving this, the Xbox sends an Image Download Response packet.
 | `0x0118` | uint32 (LE) | Status code: 1 if the XEX2 file is cached, 0 if not |
 
 If the status code is 1, the PC closes the connection after receiving this, and
-the Xbox 360 launches the cached executable.
+the Xbox 360 launches the cached executable. This will be if the file size and
+XEX version in the Hello packet match the one in the console's cache.
 
 If the status code is 0, the PC will then begin sending the XEX2 file over raw
 TCP, with no packet headers or structure.
@@ -105,7 +104,8 @@ TCP, with no packet headers or structure.
 | -------- | ----------- | ------------------------- |
 | `0x0118` | uint32 (LE) | Status code: 0 on success |
 
-*(TODO: What are the failure status codes?)*
+(On XEX validation failure, the Xbox drops the connection with the PC and does
+not return a response.)
 
 Sent by the Xbox after verifying the XEX file. The PC closes the connection
 after this packet is received.
