@@ -46,7 +46,10 @@ The subdirectory in the MCX folder is decided by the "type" parameter in the
 `urn:schemas-microsoft-com:nhed:attributes` segment in the AL header.
 
 If a valid XEX2 isn't found in that folder, then no connection is made. If a
-suitable one is, a TCP connection is made speaking the following protocol:
+suitable one is, a TCP connection is made to the IP address and port provided.
+
+An implementation of the protocol is available at:
+https://github.com/InvoxiPlayGames/XEXSled
 
 ### "Device Info" / Image Download Protocol
 
@@ -114,6 +117,47 @@ If the Xbox has a properly formatted HDD connected, it will store the XEX file
 in a console-signed container for the "Xbox 360 Dashboard" title ID (`FFFE07D1`)
 as a system title (`000A0000`), named `MCXFile`. The XEX2 will be saved in this
 container as `xboxmcx.xex`.
+
+## Pairing Process
+
+*(TODO: Document more of this, this is a stub section.)*
+
+### Certificate/Key Generation
+
+When the extender application is pairing with the console, the console creates
+a self-signed X.509 certificate based off the system's MAC address and the
+console-specific public/private keypair in the key vault.
+
+#### Generated Certificate Details
+
+The generated certificate is a version 3 X.509 DER-encoded certificate with some
+extensions. It is self-signed with no other links in the chain.
+
+Cleaned up OpenSSL info output:
+
+* **Serial Number:** Last 5 characters of MAC address suffixed with `0001`
+    * e.g. `002248ABCDEF` = `0x2248ABCDEF0001`
+* **Signature Algorithm:** SHA-1 with RSA
+* **Issuer:**
+    * **Common Name:** `Microsoft XBOX 360`
+* **Subject:**
+    * **Common Name:** `Microsoft XBOX 360`
+* **Valid After:** Nov 16 18:44:41 2005 (`051116184441Z`)
+* **Valid Before:** Nov 16 15:00:03 2025 (`251116150003Z`). ha they're expired!
+* **Public Key:** 1024-bit public key from the console certificate, with an
+  exponent of 65537
+* **X509v3 Extensions:**
+    * **Subject Alternative Name:**
+      `URI:uuid:20000000-0000-0000-0200-xxxxxxxxxxxx` (MAC address)
+    * **Key Usage:** Digital Signature, Non Repudiation, Key Encipherment,
+      Data Encipherment
+    * **Extended Key Usage:** TLS Web Client Authentication,
+      1.3.6.1.4.1.311.10.5.12
+    * **1.3.6.1.4.1.311.55.1.1:** The console certificate verbatim, including
+      master Microsoft signature (Mcx2Prov.exe verifies this!)
+* **Signature:** Self-signed
+
+*(TODO: Make a script that makes this certificate and private key given a KV.)*
 
 ## Known Extender XEX files
 
