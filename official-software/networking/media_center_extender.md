@@ -135,8 +135,8 @@ extensions. It is self-signed with no other links in the chain.
 
 Cleaned up OpenSSL info output:
 
-* **Serial Number:** Last 5 characters of MAC address suffixed with `0001`
-    * e.g. `002248ABCDEF` = `0x2248ABCDEF0001`
+* **Serial Number:** MAC address suffixed with `0001`
+    * e.g. `002248ABCDEF` = `0x002248ABCDEF0001`
 * **Signature Algorithm:** SHA-1 with RSA
 * **Issuer:**
     * **Common Name:** `Microsoft XBOX 360`
