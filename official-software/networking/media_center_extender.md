@@ -1,6 +1,6 @@
 **Emma's Xbox 360 Research Notes - Networking**
 
-Updated 23rd October 2026.
+Updated 24th October 2026.
 
 # Windows Media Center Extender
 
@@ -143,7 +143,7 @@ Cleaned up OpenSSL info output:
 * **Subject:**
     * **Common Name:** `Microsoft XBOX 360`
 * **Valid After:** Nov 16 18:44:41 2005 (`051116184441Z`)
-* **Valid Before:** Nov 16 15:00:03 2025 (`251116150003Z`). ha they're expired!
+* **Valid Until:** Nov 16 15:00:03 2025 (`251116150003Z`). ha they're expired!
 * **Public Key:** 1024-bit public key from the console certificate, with an
   exponent of 65537
 * **X509v3 Extensions:**
@@ -158,6 +158,43 @@ Cleaned up OpenSSL info output:
 * **Signature:** Self-signed
 
 *(TODO: Make a script that makes this certificate and private key given a KV.)*
+
+### XConfig Pairing Information
+
+The information about the currently paired Media Center PC is stored in XConfig
+category XCONFIG_MEDIA_CENTER_CATEGORY (6), located in mobile block "D" on NAND.
+
+Many of the values are in storage containers too big for the data they hold.
+
+As of MCX version v2.0.25960.4, from Windows 7 - earlier versions may have used
+the fields more sensibly.
+
+| Item ID | Size | Type | Description |
+| ------- | ---- |  ---- | ----------- |
+| 1 / MEDIA_PLAYER | 0x14 | char[0x14] | Not used by MCX. |
+| 2 / XESLED_VERSION | 0xA | uint32 | The version of the last-run MCX XEX |
+| 3 / XESLED_TRUST_SECRET | 0x14 | GUID (BE) | The GUID of the Media Center server in big endian. |
+| 4 / XESLED_TRUST_CODE | 0x8 | NULL | Only seen as all zeroes. |
+| 5 / XESLED_HOST_ID | 0x14 | GUID (LE) | The GUID of the Media Center server in little endian. |
+| 6 / XESLED_KEY | 0x65C | XeSled_Key_t | See below. |
+| 7 / XESLED_HOST_MAC_ADDRESS | 0x6 | byte[0x6] | The MAC address of the Media Center server PC. |
+| 8 / SERVER_UUID | 0x10 | byte[0x10] | Not used by MCX. |
+| 9 / SERVER_NAME | 0x80 | byte[0x80] | Not used by MCX. |
+| 10 / SERVER_FLAG | 0x4 | byte[0x4] | Not used by MCX. |
+
+#### XeSled_Key_t
+
+As of MCX version v2.0.25960.4, from Windows 7.
+
+| Offset | Type / Size | Description |
+| ------ | ----------- | ----------- |
+| `0x00` | uint16 | Version? Always `2` |
+| `0x02` | char[0x2B] | Media Center server GUID string prefixed with `uuid:` |
+| `0x2D` | byte[0x14] | Unknown SHA-1 hash *(TODO: of what?)* |
+| `0x41` | byte | Unpopulated, unused? |
+
+The remainder of the 0x65C byte block is uncleared stack memory contents from
+the extender executable.
 
 ## Known Extender XEX files
 
